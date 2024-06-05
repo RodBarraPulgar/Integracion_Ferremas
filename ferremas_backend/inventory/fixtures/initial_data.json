@@ -1,0 +1,257 @@
+[
+    {
+      "model": "inventory.category",
+      "pk": 1,
+      "fields": {
+        "name": "Herramientas Manuales"
+      }
+    },
+    {
+      "model": "inventory.category",
+      "pk": 2,
+      "fields": {
+        "name": "Herramientas Eléctricas"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 1,
+      "fields": {
+        "name": "Martillo",
+        "description": "Martillo de carpintero de 16 onzas",
+        "price_usd": "12.99",
+        "stock": 150,
+        "category": 1,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 2,
+      "fields": {
+        "name": "Destornillador",
+        "description": "Destornillador de estrella",
+        "price_usd": "5.99",
+        "stock": 200,
+        "category": 1,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 3,
+      "fields": {
+        "name": "Alicate",
+        "description": "Alicate universal",
+        "price_usd": "8.50",
+        "stock": 180,
+        "category": 1,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 4,
+      "fields": {
+        "name": "Llave Inglesa",
+        "description": "Llave inglesa ajustable",
+        "price_usd": "15.75",
+        "stock": 130,
+        "category": 1,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 5,
+      "fields": {
+        "name": "Taladro",
+        "description": "Taladro eléctrico de 600W",
+        "price_usd": "65.00",
+        "stock": 120,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 6,
+      "fields": {
+        "name": "Sierra Circular",
+        "description": "Sierra circular de 1400W",
+        "price_usd": "120.00",
+        "stock": 110,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 7,
+      "fields": {
+        "name": "Lijadora",
+        "description": "Lijadora orbital",
+        "price_usd": "45.00",
+        "stock": 140,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 8,
+      "fields": {
+        "name": "Atornillador Eléctrico",
+        "description": "Atornillador eléctrico recargable",
+        "price_usd": "25.00",
+        "stock": 160,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 9,
+      "fields": {
+        "name": "Pistola de Calor",
+        "description": "Pistola de calor de 2000W",
+        "price_usd": "30.00",
+        "stock": 190,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 10,
+      "fields": {
+        "name": "Nivel Láser",
+        "description": "Nivel láser de precisión",
+        "price_usd": "50.00",
+        "stock": 150,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 11,
+      "fields": {
+        "name": "Cortadora de Césped",
+        "description": "Cortadora de césped eléctrica",
+        "price_usd": "200.00",
+        "stock": 130,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 12,
+      "fields": {
+        "name": "Motocultor",
+        "description": "Motocultor de 3.5 HP",
+        "price_usd": "300.00",
+        "stock": 120,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 13,
+      "fields": {
+        "name": "Cortadora de Azulejos",
+        "description": "Cortadora de azulejos eléctrica",
+        "price_usd": "150.00",
+        "stock": 110,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 14,
+      "fields": {
+        "name": "Generador Eléctrico",
+        "description": "Generador eléctrico de 5000W",
+        "price_usd": "400.00",
+        "stock": 100,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 15,
+      "fields": {
+        "name": "Multímetro Digital",
+        "description": "Multímetro digital de precisión",
+        "price_usd": "20.00",
+        "stock": 150,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 16,
+      "fields": {
+        "name": "Compresor de Aire",
+        "description": "Compresor de aire de 2 HP",
+        "price_usd": "250.00",
+        "stock": 130,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 17,
+      "fields": {
+        "name": "Soldadora Inverter",
+        "description": "Soldadora inverter de 200A",
+        "price_usd": "180.00",
+        "stock": 110,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 18,
+      "fields": {
+        "name": "Pistola de Pintura",
+        "description": "Pistola de pintura eléctrica",
+        "price_usd": "70.00",
+        "stock": 140,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 19,
+      "fields": {
+        "name": "Caladora",
+        "description": "Caladora eléctrica de 500W",
+        "price_usd": "60.00",
+        "stock": 170,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    },
+    {
+      "model": "inventory.product",
+      "pk": 20,
+      "fields": {
+        "name": "Lijadora de Banda",
+        "description": "Lijadora de banda de 600W",
+        "price_usd": "80.00",
+        "stock": 160,
+        "category": 2,
+        "image": "path_to_image"
+      }
+    }
+  ]
+  
