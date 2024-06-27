@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Ferreplus{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        /* Estilos para la sidebar */
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 1050; /* Ajuste del z-index para evitar traslapes */
+            top: 0;
+            right: 0;
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding-top: 60px;
+            color: #343a40;
+        }
+        .sidebar a {
+            padding: 8px 8px 8px 32px;
+            text-decoration: none;
+            font-size: 25px;
+            color: #818181;
+            display: block;
+            transition: 0.3s;
+        }
+        .sidebar a:hover {
+            color: #000;
+        }
+        .sidebar .closebtn {
+            position: absolute;
+            top: 0;
+            right: 25px;
+            font-size: 36px;
+            margin-left: 50px;
+        }
+        .cart-item img {
+            width: 50px;
+            height: auto;
+            margin-right: 10px;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .cart-item-details {
+            flex: 1;
+            margin-left: 10px;
+        }
+        .carousel-control-prev,
+        .carousel-control-next,
+        .btn-outline-secondary {
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'inicio' %}">Ferreplus</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'inicio' %}">Inicio</a>
+                </li>
+                {% if user.is_authenticated %}
+                    {% if user.perfil_usuario.nombrecategoria == 'Administrador' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'crud' %}">Usuarios</a>
+                    </li>
+                    {% elif user.perfil_usuario.nombrecategoria == 'Bodeguero' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'crud' %}">Productos</a>
+                    </li>
+                    {% endif %}
+                    {% if user.perfil_usuario.nombrecategoria == 'Administrador' or user.perfil_usuario.nombrecategoria == 'Bodeguero' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'producto_crud' %}">Gestión de Productos</a>
+                    </li>
+                    {% endif %}
+                    {% if user.perfil_usuario.nombrecategoria == 'Administrador' or user.perfil_usuario.nombrecategoria == 'Contador' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'crud_ventas' %}">Gestión de Ventas</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Cerrar Sesión</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'registro' %}">Registrarse</a>
+                    </li>
+                {% endif %}
+            </ul>
+            {% if user.is_authenticated %}
+                <span class="navbar-text">
+                    Bienvenido, {{ user.username }}
+                </span>
+                <button class="btn btn-secondary ml-auto" onclick="openCart()"><i class="fas fa-shopping-cart"></i> Carrito</button>
+            {% endif %}
+        </div>
+    </nav>
+
+    <div id="cart-sidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeCart()">&times;</a>
+        <h2>Carrito de Compras</h2>
+        <div id="cart-items"></div>
+        <div id="total"></div>
+        <button id="checkout-button" class="btn btn-primary btn-block">Proceder al Pago</button>
+        <button id="empty-cart-button" class="btn btn-danger btn-block mt-3">Vaciar Carrito</button>
+    </div>
+
+    <div id="main-content" class="container mt-5">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+
+        function formatCLP(number) {
+            // Redondea el número a un entero
+            number = Math.round(number);
+            // Formatea el número con puntos como separadores de miles
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        function openCart() {
+            document.getElementById("cart-sidebar").style.width = "400px";
+            renderCart();
+        }
+
+        function closeCart() {
+            document.getElementById("cart-sidebar").style.width = "0";
+        }
+
+        document.getElementById('checkout-button').addEventListener('click', function() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart.length === 0) {
+                alert('Primero debe agregar productos al carrito para proceder al pago.');
+            } else {
+                window.location.href = "{% url 'checkout' %}";
+            }
+        });
+
+        document.getElementById('empty-cart-button').addEventListener('click', function() {
+            localStorage.removeItem('cart');
+            renderCart();
+        });
+
+        function renderCart() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const cartItemsDiv = document.getElementById('cart-items');
+        const totalDiv = document.getElementById('total');
+        cartItemsDiv.innerHTML = '';
+        let totalAmount = 0;
+
+        cart.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('cart-item');
+            const subtotal = item.price * item.quantity;
+            itemDiv.innerHTML = `
+                <img src="${item.image || '{% static "productos/img_defect.png" %}'}" alt="${item.name}">
+                <div class="cart-item-details">
+                    <h5>${item.name}</h5>
+                    <p>Marca: ${item.marca}</p>
+                    <p>Precio: $${formatCLP(item.price)}</p>
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <button class="btn btn-outline-secondary decrease-quantity" type="button" data-id="${item.id}">-</button>
+                        </div>
+                        <input type="number" class="form-control quantity-input" value="${item.quantity}" min="1" max="${item.stock}" data-id="${item.id}">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary increase-quantity" type="button" data-id="${item.id}">+</button>
+                        </div>
+                    </div>
+                    <p>Subtotal: $${formatCLP(subtotal)}</p>
+                    <button class="btn btn-danger remove-item" data-id="${item.id}">Eliminar</button>
+                </div>
+            `;
+            cartItemsDiv.appendChild(itemDiv);
+            totalAmount += subtotal;
+        });
+
+        totalDiv.innerHTML = `<h4>Total: $${formatCLP(totalAmount)}</h4>`;
+    }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('cart-items').addEventListener('input', function(event) {
+                if (event.target.classList.contains('quantity-input')) {
+                    const id = parseInt(event.target.getAttribute('data-id'));
+                    let quantity = parseInt(event.target.value);
+                    updateQuantity(id, quantity);
+                }
+            });
+
+            document.getElementById('cart-items').addEventListener('click', function(event) {
+                if (event.target.classList.contains('remove-item')) {
+                    const id = parseInt(event.target.getAttribute('data-id'));
+                    removeItem(id);
+                } else if (event.target.classList.contains('decrease-quantity')) {
+                    const id = parseInt(event.target.getAttribute('data-id'));
+                    const quantityInput = document.querySelector(`.quantity-input[data-id="${id}"]`);
+                    let quantity = parseInt(quantityInput.value);
+                    if (quantity > 1) {
+                        quantityInput.value = quantity - 1;
+                        updateQuantity(id, quantity - 1);
+                    }
+                } else if (event.target.classList.contains('increase-quantity')) {
+                    const id = parseInt(event.target.getAttribute('data-id'));
+                    const quantityInput = document.querySelector(`.quantity-input[data-id="${id}"]`);
+                    let quantity = parseInt(quantityInput.value);
+                    const max = parseInt(quantityInput.getAttribute('max'));
+                    if (quantity < max) {
+                        quantityInput.value = quantity + 1;
+                        updateQuantity(id, quantity + 1);
+                    } else {
+                        alert('Cantidad excede el stock disponible.');
+                    }
+                }
+            });
+
+            function updateQuantity(id, quantity) {
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                const item = cart.find(product => product.id === id);
+                if (item) {
+                    if (quantity > item.stock) {
+                        alert('Cantidad excede el stock disponible.');
+                        item.quantity = item.stock;
+                    } else if (quantity < 1) {
+                        item.quantity = 1;
+                    } else {
+                        item.quantity = quantity;
+                    }
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    renderCart();
+                }
+            }
+
+            function removeItem(id) {
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                cart = cart.filter(product => product.id !== id);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                renderCart();
+            }
+
+            renderCart();
+        });
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

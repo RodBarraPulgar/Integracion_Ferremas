@@ -1,0 +1,76 @@
+{% extends "core/base.html" %}
+
+{% block title %}CRUD de Usuarios - Ferreplus{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Gestión de Usuarios</h2>
+    <div id="messages"></div>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Email</th>
+                <th>RUT</th>
+                <th>Teléfono</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="user-list">
+        </tbody>
+    </table>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadUsers();
+
+    function loadUsers() {
+        fetch('/usuarios/api/usuarios/')
+            .then(response => response.json())
+            .then(data => {
+                const userList = document.getElementById('user-list');
+                userList.innerHTML = '';
+                data.forEach(user => {
+                    const userRow = `
+                        <tr>
+                            <td>${user.nombre}</td>
+                            <td>${user.apellido}</td>
+                            <td>${user.correo}</td>
+                            <td>${user.rut}</td>
+                            <td>${user.telefono}</td>
+                            <td>
+                                <a href="/usuarios/crud/editar/${user.id}/" class="btn btn-warning btn-sm">Editar</a>
+                                <button class="btn btn-danger btn-sm" onclick="deleteUser(${user.id})">Eliminar</button>
+                            </td>
+                        </tr>`;
+                    userList.innerHTML += userRow;
+                });
+            });
+    }
+
+    function deleteUser(userId) {
+        fetch(`/usuarios/api/usuarios/${userId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                loadUsers();
+                showMessage('Usuario eliminado exitosamente.', 'success');
+            } else {
+                showMessage('Error al eliminar el usuario.', 'danger');
+            }
+        });
+    }
+
+    function showMessage(message, type) {
+        const messageDiv = document.getElementById('messages');
+        messageDiv.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "core/base.html" %}
+
+{% block title %}Eliminar Usuario - Ferreplus{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Eliminar Usuario</h2>
+    <p>¿Realmente desea eliminar al usuario <span id="usuario-nombre"></span> <span id="usuario-apellido"></span>?</p>
+    <form id="delete-user-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a href="{% url 'crud' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+    <div id="messages"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const userId = window.location.pathname.split('/').filter(part => part).pop();
+    loadUser(userId);
+
+    document.getElementById('delete-user-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        fetch(`/usuarios/api/usuarios/${userId}/`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/usuarios/crud/';
+            } else {
+                showMessage('Error al eliminar el usuario.', 'danger');
+            }
+        });
+    });
+
+    function loadUser(userId) {
+        fetch(`/usuarios/api/usuarios/${userId}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('usuario-nombre').innerText = data.nombre;
+                document.getElementById('usuario-apellido').innerText = data.apellido;
+            });
+    }
+
+    function showMessage(message, type) {
+        const messageDiv = document.getElementById('messages');
+        messageDiv.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+    }
+});
+</script>
+{% endblock %}

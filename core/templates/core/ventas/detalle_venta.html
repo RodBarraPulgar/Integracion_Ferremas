@@ -1,0 +1,38 @@
+{% extends "core/base.html" %}
+{% load humanize %}
+
+{% block title %}Detalle de Venta - Ferreplus{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Detalle de Venta</h2>
+    <p><strong>Usuario:</strong> {{ venta.usuario.username }} ({{ venta.usuario.nombre }} {{ venta.usuario.apellido }})</p>
+    <p><strong>Orden de Compra:</strong> {{ venta.buy_order }}</p>
+    <p><strong>Monto:</strong> ${{ venta.amount|intcomma }}</p>
+    <p><strong>Fecha de Transacción:</strong> {{ venta.transaction_date }}</p>
+
+    <h3>Detalles de Productos</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Código</th>
+                <th>Marca</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in detalles %}
+            <tr>
+                <td>{{ detalle.producto.name }}</td>
+                <td>{{ detalle.producto.codigo_producto }}</td>
+                <td>{{ detalle.producto.marca }}</td>
+                <td>{{ detalle.cantidad }}</td>
+                <td>${{ detalle.precio_unitario|intcomma }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

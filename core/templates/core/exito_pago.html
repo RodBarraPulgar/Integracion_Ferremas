@@ -1,0 +1,16 @@
+<!-- core/templates/core/exito_pago.html -->
+{% extends "core/base.html" %}
+
+{% block title %}Pago Exitoso - Ferreplus{% endblock %}
+
+{% block content %}
+<h1>Pago Exitoso</h1>
+<p>Gracias por tu compra. Tu pago se ha procesado correctamente.</p>
+<p>Detalles de la transacción:</p>
+<ul>
+    <li>Número de Orden: {{ response.buy_order }}</li>
+    <li>Monto: ${{ response.amount }}</li>
+    <li>Fecha de Transacción: {{ response.transaction_date }}</li>
+</ul>
+<a href="{% url 'inicio' %}" class="btn btn-primary">Volver al Inicio</a>
+{% endblock %}

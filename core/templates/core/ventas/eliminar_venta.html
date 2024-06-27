@@ -1,0 +1,49 @@
+{% extends "core/base.html" %}
+
+{% block title %}Eliminar Venta - Ferreplus{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Eliminar Venta</h2>
+    <p>¿Realmente desea eliminar la venta de la orden {{ venta.buy_order }}?</p>
+    <form id="eliminar-venta-form">
+        <button type="button" class="btn btn-danger" onclick="eliminarVenta({{ venta.id }})">Eliminar</button>
+        <a href="{% url 'crud_ventas' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function eliminarVenta(id) {
+    const csrftoken = getCookie('csrftoken');
+    fetch(`/ventas/api/ventas/${id}/`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.href = '{% url "crud_ventas" %}';
+        } else {
+            alert('Error al eliminar la venta.');
+        }
+    });
+}
+</script>
+{% endblock %}

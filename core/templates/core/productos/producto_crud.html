@@ -1,0 +1,295 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}CRUD de Productos{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">CRUD de Productos</h1>
+
+<h2 class="mb-3">Crear Producto</h2>
+<form id="create-product-form" class="mb-5" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="create-codigo_producto">Código del Producto:</label>
+        <input type="text" class="form-control" id="create-codigo_producto" name="codigo_producto" required>
+    </div>
+    <div class="form-group">
+        <label for="create-marca">Marca:</label>
+        <input type="text" class="form-control" id="create-marca" name="marca" required>
+    </div>
+    <div class="form-group">
+        <label for="create-nombre">Nombre:</label>
+        <input type="text" class="form-control" id="create-nombre" name="name" required>
+    </div>
+    <div class="form-group">
+        <label for="create-precio">Precio (USD):</label>
+        <input type="number" class="form-control" id="create-precio" name="precio" step="0.01" required>
+    </div>
+    <div class="form-group">
+        <label for="create-stock">Stock:</label>
+        <input type="number" class="form-control" id="create-stock" name="stock" required>
+    </div>
+    <div class="form-group">
+        <label for="create-cat">Categoría:</label>
+        <select class="form-control" id="create-cat" name="cat" required>
+            <!-- Las opciones se cargarán dinámicamente -->
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="create-imagen">Imagen:</label>
+        <input type="file" class="form-control" id="create-imagen" name="imagen">
+    </div>
+    <button type="submit" class="btn btn-primary">Crear Producto</button>
+</form>
+
+<h2 class="mb-3">Lista de Productos</h2>
+<div id="product-list"></div>
+
+<!-- Modal para editar producto -->
+<div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editProductModalLabel">Editar Producto</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-product-form" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="edit-codigo_producto">Código del Producto:</label>
+                <input type="text" class="form-control" id="edit-codigo_producto" name="codigo_producto" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-marca">Marca:</label>
+                <input type="text" class="form-control" id="edit-marca" name="marca" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-nombre">Nombre:</label>
+                <input type="text" class="form-control" id="edit-nombre" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-precio">Precio:</label>
+                <input type="number" class="form-control" id="edit-precio" name="precio" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-stock">Stock:</label>
+                <input type="number" class="form-control" id="edit-stock" name="stock" required>
+            </div>
+            <div class="form-group">
+                <label for="edit-cat">Categoría:</label>
+                <select class="form-control" id="edit-cat" name="cat" required>
+                    <!-- Las opciones se cargarán dinámicamente -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="edit-imagen">Imagen:</label>
+                <input type="file" class="form-control" id="edit-imagen" name="imagen">
+            </div>
+            <input type="hidden" id="edit-product-id">
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para confirmación de eliminación -->
+<div class="modal fade" id="deleteProductModal" tabindex="-1" role="dialog" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteProductModalLabel">Confirmar Eliminación</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro de que deseas eliminar este producto?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="confirm-delete-btn">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let dollarValue = 1;
+        let productIdToDelete = null;
+    
+        function fetchDollarValue() {
+            fetch('https://mindicador.cl/api/dolar')
+                .then(response => response.json())
+                .then(data => {
+                    dollarValue = data.serie[0].valor;
+                    console.log('Dollar value:', dollarValue);
+                    loadProducts();
+                })
+                .catch(error => {
+                    console.error('Error fetching dollar value:', error);
+                });
+        }
+    
+        function loadCategories() {
+            fetch('/productos/api/categorias/')
+                .then(response => response.json())
+                .then(data => {
+                    const createCatSelect = document.getElementById('create-cat');
+                    const editCatSelect = document.getElementById('edit-cat');
+                    createCatSelect.innerHTML = '';
+                    editCatSelect.innerHTML = '';
+                    data.forEach(cat => {
+                        const option = `<option value="${cat.id}">${cat.name}</option>`;
+                        createCatSelect.innerHTML += option;
+                        editCatSelect.innerHTML += option;
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading categories:', error);
+                });
+        }
+    
+        function loadProducts() {
+            fetch('/productos/api/productos/')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Productos:', data);
+                    const productList = document.getElementById('product-list');
+                    productList.innerHTML = '';
+                    data.forEach(product => {
+                        const productDiv = `
+                            <div class="product-item card mb-3 p-3">
+                                <h3 class="card-title">${product.name}</h3>
+                                <p class="card-text">Código: ${product.codigo_producto}</p>
+                                <p class="card-text">Marca: ${product.marca}</p>
+                                <p class="card-text">Precio (USD): $${product.precio}</p>
+                                <p class="card-text">Precio (CLP): $${(product.precio * dollarValue).toFixed(2)}</p>
+                                <p class="card-text">Stock: ${product.stock}</p>
+                                <p class="card-text">Categoría: ${product.cat_name}</p>
+                                <img src="${product.imagen || '{% static "productos/img_defect.png" %}'}" alt="${product.name}" class="img-thumbnail mb-3" style="width: 100px; height: auto;">
+                                <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editProductModal" data-id="${product.id}">Editar</button>
+                                <button class="btn btn-danger btn-sm" data-id="${product.id}">Eliminar</button>
+                            </div>`;
+                        productList.innerHTML += productDiv;
+                    });
+    
+                    document.querySelectorAll('.btn-warning').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const productId = this.getAttribute('data-id');
+                            fetch(`/productos/api/productos/${productId}/`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    document.getElementById('edit-codigo_producto').value = data.codigo_producto;
+                                    document.getElementById('edit-marca').value = data.marca;
+                                    document.getElementById('edit-nombre').value = data.name;
+                                    document.getElementById('edit-precio').value = data.precio;
+                                    document.getElementById('edit-stock').value = data.stock;
+                                    document.getElementById('edit-cat').value = data.cat;
+                                    document.getElementById('edit-product-id').value = data.id;
+                                });
+                        });
+                    });
+    
+                    document.querySelectorAll('.btn-danger').forEach(button => {
+                        button.addEventListener('click', function() {
+                            productIdToDelete = this.getAttribute('data-id');
+                            $('#deleteProductModal').modal('show');
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading products:', error);
+                });
+        }
+    
+        document.getElementById('create-product-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            fetch('/productos/api/productos/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(() => {
+                loadProducts();
+                event.target.reset();
+            })
+            .catch(error => {
+                console.error('Error creating product:', error);
+            });
+        });
+    
+        document.getElementById('edit-product-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const productId = document.getElementById('edit-product-id').value;
+            const formData = new FormData(event.target);
+            fetch(`/productos/api/productos/${productId}/`, {
+                method: 'PUT',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                }
+            })
+            .then(response => response.json())
+            .then(() => {
+                loadProducts();
+                $('#editProductModal').modal('hide');
+            })
+            .catch(error => {
+                console.error('Error updating product:', error);
+            });
+        });
+    
+        document.getElementById('confirm-delete-btn').addEventListener('click', function() {
+            if (productIdToDelete) {
+                fetch(`/productos/api/productos/${productIdToDelete}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        loadProducts();
+                        $('#deleteProductModal').modal('hide');
+                    } else {
+                        return response.json().then(data => {
+                            throw new Error(data.message);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting product:', error);
+                });
+            }
+        });
+    
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    
+        loadCategories();
+        fetchDollarValue();
+    });
+    </script>
+    
+    
+{% endblock %}

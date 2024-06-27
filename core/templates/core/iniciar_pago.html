@@ -1,0 +1,19 @@
+<!-- core/templates/core/iniciar_pago.html -->
+{% extends "core/base.html" %}
+
+{% block title %}Confirmación de Pago - Ferreplus{% endblock %}
+
+{% block content %}
+<h1>Confirmación de Pago</h1>
+<p>Estás a punto de proceder con el pago. Por favor, revisa los detalles de tu compra antes de continuar.</p>
+<p>Detalles de la transacción:</p>
+<ul>
+    <li>Número de Orden: {{ buy_order }}</li>
+    <li>Monto: ${{ amount }}</li>
+</ul>
+<form method="POST" action="{{ url }}">
+    <input type="hidden" name="token_ws" value="{{ token }}">
+    <button type="submit" class="btn btn-success">Confirmar y Proceder al Pago</button>
+</form>
+<a href="{% url 'checkout' %}" class="btn btn-secondary">Cancelar</a>
+{% endblock %}

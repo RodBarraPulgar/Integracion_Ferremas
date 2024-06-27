@@ -1,0 +1,59 @@
+{% extends "core/base.html" %}
+
+{% block title %}Checkout - Ferreplus{% endblock %}
+
+{% block content %}
+<h1>Checkout</h1>
+
+<div id="checkout-message" class="alert alert-warning" style="display: none;"></div>
+
+<div id="checkout-details" style="display: none;">
+    <h2>Detalles del pedido</h2>
+    <div id="order-summary"></div>
+    <h3 id="total-amount"></h3>
+    <form id="checkout-form" method="post" action="{% url 'iniciar_pago' %}">
+        {% csrf_token %}
+        <input type="hidden" name="amount" id="total-amount-input">
+        <input type="hidden" name="cart" id="cart-input">
+        <button type="submit" class="btn btn-success">Finalizar Compra</button>
+    </form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        const checkoutMessage = document.getElementById('checkout-message');
+        const checkoutDetails = document.getElementById('checkout-details');
+        const orderSummary = document.getElementById('order-summary');
+        const totalAmount = document.getElementById('total-amount');
+        const totalAmountInput = document.getElementById('total-amount-input');
+        const cartInput = document.getElementById('cart-input');
+        
+        if (cart.length === 0) {
+            checkoutMessage.style.display = 'block';
+            checkoutMessage.innerText = 'Primero debe agregar productos al carrito para proceder al pago.';
+        } else {
+            checkoutDetails.style.display = 'block';
+            let total = 0;
+
+            cart.forEach(item => {
+                const itemDiv = `
+                    <div class="order-item">
+                        <img src="${item.image}" alt="${item.name}" style="width: 50px; height: auto;">
+                        <span>${item.name}</span>
+                        <span>${item.quantity}</span>
+                        <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                `;
+                orderSummary.innerHTML += itemDiv;
+                total += item.price * item.quantity;
+            });
+
+            totalAmount.innerText = `Total a pagar: $${total.toFixed(2)}`;
+            totalAmountInput.value = total.toFixed(2);
+            cartInput.value = JSON.stringify(cart);
+        }
+    });
+</script>
+
+{% endblock %}

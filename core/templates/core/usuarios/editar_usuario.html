@@ -1,0 +1,109 @@
+{% extends "core/base.html" %}
+
+{% block title %}Editar Usuario - Ferreplus{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Editar Usuario</h2>
+    <form id="edit-user-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="edit-username">Username:</label>
+            <input type="text" class="form-control" id="edit-username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-nombre">Nombre:</label>
+            <input type="text" class="form-control" id="edit-nombre" name="nombre" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-apellido">Apellido:</label>
+            <input type="text" class="form-control" id="edit-apellido" name="apellido" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-correo">Correo:</label>
+            <input type="email" class="form-control" id="edit-correo" name="correo" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-rut">RUT:</label>
+            <input type="text" class="form-control" id="edit-rut" name="rut" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-direccion">Dirección:</label>
+            <input type="text" class="form-control" id="edit-direccion" name="direccion" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-telefono">Teléfono:</label>
+            <input type="text" class="form-control" id="edit-telefono" name="telefono" required>
+        </div>
+        <div class="form-group">
+            <label for="edit-perfil_usuario">Perfil de Usuario:</label>
+            <select class="form-control" id="edit-perfil_usuario" name="perfil_usuario" required>
+                <!-- Las opciones se cargarán dinámicamente -->
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </form>
+    <div id="messages"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const userId = window.location.pathname.split('/').filter(part => part).pop();
+    loadUser(userId);
+
+    document.getElementById('edit-user-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        fetch(`/usuarios/api/usuarios/${userId}/`, {
+            method: 'PUT',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(Object.fromEntries(formData))
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/usuarios/crud/';
+            } else {
+                showMessage('Error al actualizar el usuario.', 'danger');
+            }
+        });
+    });
+
+    function loadUser(userId) {
+        fetch(`/usuarios/api/usuarios/${userId}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('edit-username').value = data.username;
+                document.getElementById('edit-nombre').value = data.nombre;
+                document.getElementById('edit-apellido').value = data.apellido;
+                document.getElementById('edit-correo').value = data.correo;
+                document.getElementById('edit-rut').value = data.rut;
+                document.getElementById('edit-direccion').value = data.direccion;
+                document.getElementById('edit-telefono').value = data.telefono;
+                loadCategories(data.perfil_usuario);
+            });
+    }
+
+    function loadCategories(selectedId) {
+        fetch('/usuarios/api/categorias/')
+            .then(response => response.json())
+            .then(data => {
+                const categorySelect = document.getElementById('edit-perfil_usuario');
+                categorySelect.innerHTML = '';
+                data.forEach(cat => {
+                    const selected = cat.id === selectedId ? 'selected' : '';
+                    const option = `<option value="${cat.id}" ${selected}>${cat.nombrecategoria}</option>`;
+                    categorySelect.innerHTML += option;
+                });
+            });
+    }
+
+    function showMessage(message, type) {
+        const messageDiv = document.getElementById('messages');
+        messageDiv.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+    }
+});
+</script>
+{% endblock %}

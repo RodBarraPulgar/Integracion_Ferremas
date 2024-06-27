@@ -1,0 +1,104 @@
+{% extends "core/base.html" %}
+
+{% block title %}CRUD de Ventas - Ferreplus{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Gestión de Ventas</h2>
+        <a href="{% url 'analisis_ventas' %}" class="btn btn-primary">Análisis de Ventas</a>
+    </div>
+    <form id="search-form" class="mb-4">
+        <div class="form-row">
+            <div class="col">
+                <input type="text" class="form-control" id="search-keyword" placeholder="Buscar...">
+            </div>
+            <div class="col">
+                <input type="date" class="form-control" id="start-date" placeholder="Fecha de inicio">
+            </div>
+            <div class="col">
+                <input type="date" class="form-control" id="end-date" placeholder="Fecha de fin">
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
+        </div>
+    </form>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Orden de Compra</th>
+                <th>Monto</th>
+                <th>Fecha de Transacción</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="ventas-list"></tbody>
+    </table>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('search-form');
+
+    searchForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const keyword = document.getElementById('search-keyword').value;
+        const startDate = document.getElementById('start-date').value;
+        const endDate = document.getElementById('end-date').value;
+
+        fetchVentas(keyword, startDate, endDate);
+    });
+
+    function fetchVentas(keyword='', startDate='', endDate='') {
+        let url = `/ventas/api/ventas/?keyword=${encodeURIComponent(keyword)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const ventasList = document.getElementById('ventas-list');
+                ventasList.innerHTML = '';
+                data.forEach(venta => {
+                    const ventaRow = `
+                        <tr>
+                            <td>${venta.usuario}</td>
+                            <td>${venta.buy_order}</td>
+                            <td>${venta.amount.toLocaleString('es-CL')}</td>
+                            <td>${new Date(venta.transaction_date).toLocaleString()}</td>
+                            <td>
+                                <a href="/ventas/crud/detalle/${venta.id}/" class="btn btn-info btn-sm">Detalle</a>
+                                <button class="btn btn-danger btn-sm" onclick="eliminarVenta(${venta.id})">Eliminar</button>
+                            </td>
+                        </tr>`;
+                    ventasList.innerHTML += ventaRow;
+                });
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+            });
+    }
+
+    window.eliminarVenta = function(id) {
+        if (confirm('¿Estás seguro de que deseas eliminar esta venta?')) {
+            fetch(`/ventas/api/ventas/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    fetchVentas();
+                } else {
+                    alert('Error al eliminar la venta.');
+                }
+            });
+        }
+    }
+
+    // Fetch last 30 ventas on page load
+    fetchVentas();
+});
+</script>
+{% endblock %}
